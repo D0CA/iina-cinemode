@@ -1,0 +1,40 @@
+{
+  "name": "CineMode",
+  "identifier": "com.doca.iina-cinemode",
+  "version": "1.2.0",
+  "ghRepo": "D0CA/iina-cinemode",
+  "ghVersion": 1,
+  "description": "Fullscreen pause overlay and skip intro for IINA. Optional Stremio next-episode shortcut.",
+  "author": {
+    "name": "doca",
+    "url": "https://github.com/D0CA"
+  },
+  "entry": "src/index.js",
+  "permissions": [
+    "show-osd",
+    "show-alert",
+    "video-overlay",
+    "network-request",
+    "file-system"
+  ],
+  "allowedDomains": ["*"],
+  "preferencesPage": "pref.html",
+  "helpPage": "ui/help.html",
+  "preferenceDefaults": {
+    "tmdbApiKey": "",
+    "language": "fr-FR",
+    "pauseOverlay": true,
+    "pauseDelay": 2,
+    "skipIntro": true,
+    "autoSkip": false,
+    "useIntroDB": true,
+    "useAniSkip": true,
+    "letterboxd": true,
+    "anilistRating": true,
+    "overlayCast": true,
+    "overlaySynopsis": true,
+    "overlayProgress": true,
+    "overlayUpNext": true,
+    "matchLanguageTracks": true
+  }
+}

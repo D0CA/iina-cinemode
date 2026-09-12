@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      .pref-section {
+        margin-bottom: 14px;
+      }
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pref-section">
+      <span data-i18n="tmdbKey">Clé API TMDB</span>
+      <input type="text" data-pref-key="tmdbApiKey" placeholder="abc123..." />
+      <p class="small secondary pref-help" data-i18n="tmdbHelp">
+        Gratuite sur themoviedb.org/settings/api.
+      </p>
+    </div>
+
+    <div class="pref-section">
+      <span data-i18n="language">Langue de CineMode</span>
+      <select id="language">
+        <option value="fr-FR">Français</option>
+        <option value="en-US">English</option>
+        <option value="es-ES">Español</option>
+        <option value="de-DE">Deutsch</option>
+        <option value="it-IT">Italiano</option>
+        <option value="pt-BR">Português</option>
+      </select>
+      <p class="small secondary pref-help" data-i18n="languageHelp">
+        Menus, overlay pause, skip, OSD, et infos TMDB.
+      </p>
+      <p class="small secondary pref-help" data-i18n="restartHint">
+        Change la langue, puis relance IINA pour les menus.
+      </p>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="pauseOverlay" />
+        <span data-i18n="pauseOverlay">Overlay pause plein écran</span>
+      </label>
+    </div>
+
+    <div class="pref-section">
+      <span data-i18n="pauseDelay">Délai avant l’écran pause (secondes)</span>
+      <input type="number" data-type="float" data-pref-key="pauseDelay" />
+      <p class="small secondary pref-help" data-i18n="pauseDelayHelp">
+        2 secondes, puis apparition en fondu.
+      </p>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="skipIntro" />
+        <span data-i18n="skipIntro">Bouton Passer l’intro</span>
+      </label>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="useIntroDB" />
+        <span data-i18n="useIntroDB">Utiliser TheIntroDB</span>
+      </label>
+      <p class="small secondary pref-help" data-i18n="useIntroDBHelp">
+        Timings communautaires.
+      </p>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="useAniSkip" />
+        <span data-i18n="useAniSkip">Utiliser AniSkip (anime)</span>
+      </label>
+      <p class="small secondary pref-help" data-i18n="useAniSkipHelp">
+        OP / ED communautaires via MyAnimeList, si pas de chapitres.
+      </p>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="autoSkip" />
+        <span data-i18n="autoSkip">Skip auto</span>
+      </label>
+      <p class="small secondary pref-help" data-i18n="autoSkipHelp">
+        Sinon le bouton apparaît pendant l’intro. Shift+S. Uniquement si l’intro est connue.
+      </p>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="letterboxd" />
+        <span data-i18n="letterboxd">Essayer la note Letterboxd</span>
+      </label>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="anilistRating" />
+        <span data-i18n="anilistRating">Note AniList pour l’anime</span>
+      </label>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="overlayCast" />
+        <span data-i18n="overlayCast">Afficher le casting</span>
+      </label>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="overlaySynopsis" />
+        <span data-i18n="overlaySynopsis">Afficher le synopsis</span>
+      </label>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="overlayProgress" />
+        <span data-i18n="overlayProgress">Afficher la barre de progression</span>
+      </label>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="overlayUpNext" />
+        <span data-i18n="overlayUpNext">Bouton À suivre</span>
+      </label>
+      <p class="small secondary pref-help" data-i18n="overlayUpNextHelp">
+        Ouvre la fiche du prochain épisode dans Stremio (pas le torrent suivant). Désactive si tu n’utilises pas Stremio.
+      </p>
+    </div>
+
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="matchLanguageTracks" />
+        <span data-i18n="matchLanguageTracks">Pistes audio / sous-titres selon la langue</span>
+      </label>
+      <p class="small secondary pref-help" data-i18n="matchLanguageTracksHelp">
+        Si un audio VF existe, il est choisi. Sinon, sous-titres dans cette langue.
+      </p>
+    </div>
+
+    <script src="ui/prefs-i18n.js"></script>
+    <script>
+      (function () {
+        const prefs = window.iina && window.iina.preferences;
+        const select = document.getElementById("language");
+        function useLang(lang) {
+          applyPrefsI18n(lang || "fr-FR");
+        }
+        if (!prefs) {
+          useLang("fr-FR");
+          return;
+        }
+        prefs.get("language", function (value) {
+          const lang = value || "fr-FR";
+          select.value = lang;
+          useLang(lang);
+        });
+        select.addEventListener("change", function () {
+          prefs.set("language", select.value);
+          if (prefs.sync) prefs.sync();
+          useLang(select.value);
+        });
+      })();
+    </script>
+  </body>
+</html>
