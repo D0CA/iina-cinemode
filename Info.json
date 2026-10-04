@@ -1,9 +1,9 @@
 {
   "name": "CineMode",
   "identifier": "com.doca.iina-cinemode",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "ghRepo": "D0CA/iina-cinemode",
-  "ghVersion": 1,
+  "ghVersion": 2,
   "description": "Fullscreen pause overlay and skip intro for IINA. Optional Stremio next-episode shortcut.",
   "author": {
     "name": "doca",
@@ -25,6 +25,7 @@
     "language": "fr-FR",
     "pauseOverlay": true,
     "pauseDelay": 2,
+    "dismissOnSeek": true,
     "skipIntro": true,
     "autoSkip": false,
     "useIntroDB": true,

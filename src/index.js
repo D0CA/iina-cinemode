@@ -21,6 +21,10 @@ let syncTimer = null;
 let hideTimer = null;
 let pauseDelayTimer = null;
 let pauseReady = false;
+let pauseDismissed = false;
+let heldPausePos = null;
+let eatSwipeUntil = 0;
+let eatSwipeTimer = null;
 let autoSkippedFor = null;
 let tracksApplied = false;
 let searchShow = null;
@@ -39,6 +43,64 @@ function osd(message) {
     core.osd(message);
   } catch (err) {
     console.log(message);
+  }
+}
+
+function readTimePos() {
+  let pos = core.status.position;
+  if (typeof pos !== "number" || isNaN(pos)) {
+    try {
+      pos = mpv.get("time-pos");
+    } catch (err) {
+      pos = null;
+    }
+  }
+  if (typeof pos !== "number" || isNaN(pos)) return null;
+  return pos;
+}
+
+function freezePausePos() {
+  const pos = readTimePos();
+  if (pos != null) heldPausePos = pos;
+}
+
+function eatingSwipe() {
+  return !!eatSwipeUntil && Date.now() < eatSwipeUntil;
+}
+
+function finishEatSwipe() {
+  eatSwipeTimer = null;
+  eatSwipeUntil = 0;
+  if (core.status.paused && heldPausePos != null) {
+    const pos = readTimePos();
+    if (pos != null && Math.abs(pos - heldPausePos) > 0.2) {
+      restoreHeldPos();
+    }
+  }
+  requestSync(true);
+}
+
+function beginEatSwipe() {
+  eatSwipeUntil = Date.now() + 1600;
+  if (eatSwipeTimer) clearTimeout(eatSwipeTimer);
+  eatSwipeTimer = setTimeout(finishEatSwipe, 1600);
+}
+
+function extendEatSwipe() {
+  if (!core.status.paused) return;
+  eatSwipeUntil = Date.now() + 450;
+  if (eatSwipeTimer) clearTimeout(eatSwipeTimer);
+  eatSwipeTimer = setTimeout(finishEatSwipe, 450);
+}
+
+function restoreHeldPos() {
+  if (heldPausePos == null || isNaN(heldPausePos)) return;
+  try {
+    mpv.set("time-pos", heldPausePos);
+  } catch (err) {
+    try {
+      core.seekTo(heldPausePos);
+    } catch (err2) {}
   }
 }
 
@@ -144,9 +206,14 @@ function playbackSnapshot() {
     meta: currentMeta,
     poster: currentMeta && currentMeta.poster,
     backdrop: currentMeta && currentMeta.backdrop,
-    pauseVisible: !!preferences.get("pauseOverlay") && !!core.status.paused && pauseReady,
+    pauseVisible:
+      !!preferences.get("pauseOverlay") &&
+      !!core.status.paused &&
+      pauseReady &&
+      !pauseDismissed,
     skipVisible: !!preferences.get("skipIntro") && !core.status.paused && !!active,
     skipKind: active && active.type,
+    eatWheel: !!core.status.paused && eatingSwipe(),
     overlay: {
       cast: preferences.get("overlayCast") !== false,
       synopsis: preferences.get("overlaySynopsis") !== false,
@@ -159,27 +226,26 @@ function playbackSnapshot() {
 function syncOverlay() {
   if (!overlayReady) return;
   const state = playbackSnapshot();
-  const visible = state.pauseVisible || state.skipVisible;
-  const keep = !!core.status.paused || visible;
+  const visible = state.pauseVisible || state.skipVisible || state.eatWheel;
   lastSkipVisible = state.skipVisible;
-  if (keep) {
+  if (visible) {
     if (hideTimer) {
       clearTimeout(hideTimer);
       hideTimer = null;
     }
     overlay.show();
     overlay.postMessage("state", state);
-    overlay.setClickable(visible);
+    overlay.setClickable(true);
   } else {
     overlay.setClickable(false);
     overlay.postMessage("state", state);
     if (hideTimer) clearTimeout(hideTimer);
     hideTimer = setTimeout(function () {
       const next = playbackSnapshot();
-      if (!next.pauseVisible && !next.skipVisible && !core.status.paused) {
+      if (!next.pauseVisible && !next.skipVisible && !next.eatWheel) {
         overlay.hide();
       }
-    }, 900);
+    }, state.paused && pauseDismissed ? 120 : 900);
   }
 }
 
@@ -214,6 +280,24 @@ function bindOverlayMessages() {
   });
   overlay.onMessage("open-next", function () {
     openNextInStremio();
+  });
+  overlay.onMessage("dismiss-pause", function (payload) {
+    if (!core.status.paused) return;
+    pauseDismissed = true;
+    if (!payload || payload.reason !== "click") {
+      beginEatSwipe();
+    }
+    requestSync(true);
+  });
+  overlay.onMessage("swipe-eat", function () {
+    if (!core.status.paused || !pauseDismissed) return;
+    extendEatSwipe();
+  });
+  overlay.onMessage("swipe-eat-done", function () {
+    if (!pauseDismissed) return;
+    eatSwipeUntil = 0;
+    if (eatSwipeTimer) clearTimeout(eatSwipeTimer);
+    finishEatSwipe();
   });
 }
 
@@ -969,16 +1053,31 @@ event.on("mpv.pause.changed", function () {
     pauseDelayTimer = null;
   }
   if (core.status.paused) {
+    pauseDismissed = false;
+    eatSwipeUntil = 0;
+    if (eatSwipeTimer) {
+      clearTimeout(eatSwipeTimer);
+      eatSwipeTimer = null;
+    }
+    freezePausePos();
     pauseReady = false;
     pauseDelayTimer = setTimeout(function () {
       pauseDelayTimer = null;
-      if (core.status.paused) {
+      if (core.status.paused && !pauseDismissed) {
         pauseReady = true;
+        freezePausePos();
         requestSync(true);
       }
     }, pauseDelayMs());
   } else {
     pauseReady = false;
+    pauseDismissed = false;
+    heldPausePos = null;
+    eatSwipeUntil = 0;
+    if (eatSwipeTimer) {
+      clearTimeout(eatSwipeTimer);
+      eatSwipeTimer = null;
+    }
   }
   requestSync(true);
 });
@@ -991,6 +1090,19 @@ event.on("mpv.time-pos.changed", function () {
     !core.status.paused &&
     !!intro.findActive(currentSegments, position);
   if (core.status.paused) {
+    if (eatingSwipe()) return;
+    if (
+      pauseReady &&
+      !pauseDismissed &&
+      preferences.get("dismissOnSeek") !== false &&
+      heldPausePos != null &&
+      Math.abs(position - heldPausePos) > 0.25
+    ) {
+      pauseDismissed = true;
+      beginEatSwipe();
+      requestSync(true);
+      return;
+    }
     requestSync();
     return;
   }

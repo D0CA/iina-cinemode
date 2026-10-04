@@ -31,6 +31,7 @@ Download `CineMode.iinaplgz` from [Releases](https://github.com/D0CA/iina-cinemo
 - Audio / subtitle tracks follow the plugin language
 - **Up next** (optional): opens the next episode page in Stremio — it does **not** start the next torrent. Turn it off in preferences if you do not use Stremio
 - Shortcut: **Shift+S**. Auto-skip is optional (never guesses)
+- Click anywhere on the pause overlay (except Resume / Search / Up next) to dismiss it while staying paused, so IINA subtitles and chapters stay reachable. Two-finger swipe does the same without seeking
 
 ## Preferences
 
@@ -77,7 +78,7 @@ Ou ouvre le `CineMode.iinaplgz` des [Releases](https://github.com/D0CA/iina-cine
 
 ### Ce que ça fait
 
-Overlay pause (backdrop, poster, logo, date, studio, durée, note, casting, synopsis). Recherche en 3 étapes si le fichier n’est pas reconnu. Skip via TheIntroDB, AniSkip (anime), chapitres nommés, ou marque manuelle. **À suivre** (désactivable) ouvre la fiche du prochain épisode dans Stremio, pas le torrent.
+Overlay pause (backdrop, poster, logo, date, studio, durée, note, casting, synopsis). Clic n’importe où (sauf Reprendre / Recherche / À suivre) ou swipe deux doigts : l’overlay se cache, la vidéo reste en pause, sans seek. Recherche en 3 étapes si le fichier n’est pas reconnu. Skip via TheIntroDB, AniSkip (anime), chapitres nommés, ou marque manuelle. **À suivre** (désactivable) ouvre la fiche du prochain épisode dans Stremio, pas le torrent.
 
 ### Dev
 

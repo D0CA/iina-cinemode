@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1
+
+- Click anywhere except Resume / Search / Up next dismisses the pause overlay without resuming, so IINA settings stay reachable
+- Two-finger swipe while paused hides the overlay without seeking, then shows the native IINA frame
+
 ## 1.2.0
 
 - AniSkip for anime OP / ED / recap when TheIntroDB and chapters have nothing

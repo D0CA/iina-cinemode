@@ -8,6 +8,9 @@ const I18N = {
     pauseOverlay: "Overlay pause plein écran",
     pauseDelay: "Délai avant l’écran pause (secondes)",
     pauseDelayHelp: "2 secondes, puis apparition en fondu.",
+    dismissOnSeek: "Cacher l’overlay pause au swipe / seek",
+    dismissOnSeekHelp:
+      "En pause, un swipe deux doigts cache l’overlay sans avancer la vidéo, puis tu as l’écran IINA. Un clic n’importe où (sauf Reprendre / Recherche) fait pareil.",
     skipIntro: "Bouton Passer l’intro / recap / générique",
     useIntroDB: "Utiliser TheIntroDB (timings communautaires)",
     useIntroDBHelp: "Récupère intro / recap / générique sur theintrodb.org. Le bouton Skip n’apparaît que si c’est vraiment connu.",
@@ -37,6 +40,9 @@ const I18N = {
     pauseOverlay: "Fullscreen pause overlay",
     pauseDelay: "Delay before pause overlay (seconds)",
     pauseDelayHelp: "2 seconds, then a fade-in.",
+    dismissOnSeek: "Hide pause overlay on swipe / seek",
+    dismissOnSeekHelp:
+      "While paused, a two-finger swipe hides the overlay without seeking, then you get the native IINA frame. Clicking anywhere except Resume / Search does the same.",
     skipIntro: "Skip intro / recap / credits button",
     useIntroDB: "Use TheIntroDB (community timestamps)",
     useIntroDBHelp: "Fetches intro / recap / credits from theintrodb.org. Skip only appears when it is actually known.",
@@ -66,6 +72,9 @@ const I18N = {
     pauseOverlay: "Overlay de pausa a pantalla completa",
     pauseDelay: "Retraso del overlay de pausa (segundos)",
     pauseDelayHelp: "2 segundos, luego aparece con fundido.",
+    dismissOnSeek: "Ocultar el overlay al deslizar / seek",
+    dismissOnSeekHelp:
+      "En pausa, un swipe de dos dedos oculta el overlay sin avanzar el vídeo, luego ves la pantalla IINA. Un clic en cualquier sitio (salvo Reanudar / Buscar) hace lo mismo.",
     skipIntro: "Botón Saltar intro / resumen / créditos",
     useIntroDB: "Usar TheIntroDB (tiempos de la comunidad)",
     useIntroDBHelp: "Obtiene intro / recap / créditos de theintrodb.org.",
@@ -95,6 +104,9 @@ const I18N = {
     pauseOverlay: "Vollbild-Pause-Overlay",
     pauseDelay: "Verzögerung vor dem Pause-Overlay (Sekunden)",
     pauseDelayHelp: "2 Sekunden, dann Einblenden.",
+    dismissOnSeek: "Pause-Overlay bei Wisch / Seek ausblenden",
+    dismissOnSeekHelp:
+      "Bei Pause blendet ein Zwei-Finger-Wisch das Overlay aus, ohne die Position zu ändern. Klick überall außer Fortsetzen / Suche macht dasselbe.",
     skipIntro: "Intro / Rückblick / Abspann überspringen",
     useIntroDB: "TheIntroDB nutzen (Community-Timings)",
     useIntroDBHelp: "Holt Intro / Recap / Abspann von theintrodb.org.",
@@ -124,6 +136,9 @@ const I18N = {
     pauseOverlay: "Overlay pausa a schermo intero",
     pauseDelay: "Ritardo overlay pausa (secondi)",
     pauseDelayHelp: "2 secondi, poi dissolvenza in ingresso.",
+    dismissOnSeek: "Nascondi overlay pausa su swipe / seek",
+    dismissOnSeekHelp:
+      "In pausa, uno swipe a due dita nasconde l’overlay senza avanzare il video. Un clic ovunque (tranne Riprendi / Cerca) fa lo stesso.",
     skipIntro: "Pulsante Salta intro / recap / titoli",
     useIntroDB: "Usa TheIntroDB (tempi della community)",
     useIntroDBHelp: "Recupera intro / recap / titoli da theintrodb.org.",
@@ -153,6 +168,9 @@ const I18N = {
     pauseOverlay: "Overlay de pause em tela cheia",
     pauseDelay: "Atraso do overlay de pause (segundos)",
     pauseDelayHelp: "2 segundos, depois fade-in.",
+    dismissOnSeek: "Esconder overlay de pause no swipe / seek",
+    dismissOnSeekHelp:
+      "Em pause, um swipe com dois dedos esconde o overlay sem avançar o vídeo. Um clique em qualquer lugar (exceto Retomar / Buscar) faz o mesmo.",
     skipIntro: "Botão Pular intro / resumo / créditos",
     useIntroDB: "Usar TheIntroDB (tempos da comunidade)",
     useIntroDBHelp: "Busca intro / recap / créditos em theintrodb.org.",

@@ -15,6 +15,7 @@ const progressFill = document.getElementById("progress-fill");
 const progressNow = document.getElementById("progress-now");
 const progressEnd = document.getElementById("progress-end");
 const scrubberEl = document.getElementById("scrubber");
+const dismissHit = document.getElementById("dismiss-hit");
 
 let currentStrings = {};
 
@@ -119,7 +120,6 @@ function pill(text, extra) {
   const span = document.createElement("span");
   span.className = extra ? `pill ${extra}` : "pill";
   span.textContent = text;
-  span.setAttribute("data-clickable", "");
   return span;
 }
 
@@ -133,7 +133,6 @@ function renderMeta(payload) {
     if (meta.episodeTitle) {
       const ep = document.createElement("span");
       ep.textContent = meta.episodeTitle;
-      ep.setAttribute("data-clickable", "");
       metaEl.appendChild(ep);
     }
   } else if (meta.mediaType === "movie") {
@@ -154,7 +153,6 @@ function renderMeta(payload) {
     const left = payload.remaining != null ? payload.remaining : payload.duration;
     const node = document.createElement("span");
     node.textContent = `${formatTime(left)} ${t("remaining")}`;
-    node.setAttribute("data-clickable", "");
     metaEl.appendChild(node);
   }
   const rating = formatRating(meta.rating);
@@ -235,7 +233,15 @@ function renderPause(payload) {
   }
 }
 
-function setPause(visible) {
+function setClickTargets(pauseOn) {
+  const method = pauseOn ? "setAttribute" : "removeAttribute";
+  document.documentElement[method]("data-clickable", "");
+  document.body[method]("data-clickable", "");
+  if (dismissHit) dismissHit[method]("data-clickable", "");
+}
+
+function setPause(visible, eatWheel) {
+  setClickTargets(!!visible || !!eatWheel);
   if (visible) {
     if (!pauseEl.classList.contains("show")) {
       requestAnimationFrame(function () {
@@ -267,12 +273,49 @@ upNextEl.addEventListener("click", function (event) {
   iina.postMessage("open-next");
 });
 
-document.getElementById("info-hit").addEventListener("click", function (event) {
-  if (event.target.closest("button")) return;
-  iina.postMessage("resume");
+function dismissPauseOverlay(event, reason) {
+  if (!pauseEl.classList.contains("show")) return;
+  if (event && event.target && event.target.closest("button")) return;
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  iina.postMessage("dismiss-pause", { reason: reason || "click" });
+}
+
+if (dismissHit) {
+  dismissHit.addEventListener("click", function (event) {
+    dismissPauseOverlay(event, "click");
+  });
+}
+
+document.body.addEventListener("click", function (event) {
+  if (pauseEl.classList.contains("show")) {
+    dismissPauseOverlay(event, "click");
+    return;
+  }
+  if (document.body.hasAttribute("data-clickable")) {
+    iina.postMessage("swipe-eat-done");
+  }
 });
 
-skipBtn.addEventListener("click", function () {
+window.addEventListener(
+  "wheel",
+  function (event) {
+    if (!document.body.hasAttribute("data-clickable")) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (pauseEl.classList.contains("show")) {
+      dismissPauseOverlay(event, "swipe");
+    } else {
+      iina.postMessage("swipe-eat");
+    }
+  },
+  { passive: false },
+);
+
+skipBtn.addEventListener("click", function (event) {
+  event.stopPropagation();
   iina.postMessage("skip-intro");
 });
 
@@ -289,7 +332,7 @@ iina.onMessage("state", function (payload) {
   if (payload && payload.strings) currentStrings = payload.strings;
   skipBtn.textContent = skipLabel(payload.skipKind);
   if (payload.pauseVisible) renderPause(payload);
-  setPause(!!payload.pauseVisible);
+  setPause(!!payload.pauseVisible, !!payload.eatWheel);
   setSkip(!!payload.skipVisible);
 });
 
