@@ -195,6 +195,12 @@
           if (prefs.sync) prefs.sync();
           useLang(select.value);
         });
+        // IINA only saves text fields on blur; closing the window right after a paste would lose them.
+        document.querySelectorAll('input[type="text"][data-pref-key], input[type="password"][data-pref-key]').forEach(function (input) {
+          input.addEventListener("input", function () {
+            prefs.set(input.dataset.prefKey, input.value);
+          });
+        });
       })();
     </script>
   </body>
