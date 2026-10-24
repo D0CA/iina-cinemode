@@ -8,6 +8,7 @@
       }
       input[type="text"],
       input[type="number"],
+      input[type="password"],
       select {
         width: 100%;
         margin-top: 4px;
@@ -166,7 +167,7 @@
       <span data-i18n="traktClientId">Trakt Client ID</span>
       <input type="text" data-pref-key="traktClientId" />
       <span data-i18n="traktClientSecret">Trakt Client Secret</span>
-      <input type="text" data-pref-key="traktClientSecret" />
+      <input type="password" data-pref-key="traktClientSecret" autocomplete="off" />
       <p class="small secondary pref-help" data-i18n="traktHelp">
         Crée une app sur trakt.tv/oauth/applications, colle les deux clés, puis menu Plugin → Connecter Trakt.
       </p>

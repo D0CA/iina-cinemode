@@ -4,16 +4,23 @@ const API = "https://api.trakt.tv";
 const TOKEN_PATH = "@data/trakt.json";
 const REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
 const USER_AGENT = "CineMode/1.3";
+const ACTIVATE_URL = "https://trakt.tv/activate/";
 
 let polling = null;
+let refreshing = null;
 let current = { key: null, action: null, done: false };
 
+// Trakt keys and codes are plain alphanumerics; anything else is a paste error or an injection attempt.
+function clean(value) {
+  return String(value || "").replace(/[^A-Za-z0-9]/g, "");
+}
+
 function clientId() {
-  return String(preferences.get("traktClientId") || "").trim();
+  return clean(preferences.get("traktClientId"));
 }
 
 function clientSecret() {
-  return String(preferences.get("traktClientSecret") || "").trim();
+  return clean(preferences.get("traktClientSecret"));
 }
 
 function hasClient() {
@@ -36,6 +43,14 @@ function writeTokens(tokens) {
     file.write(TOKEN_PATH, JSON.stringify(tokens || {}, null, 2));
   } catch (err) {
     console.log(`trakt tokens write: ${err}`);
+    return;
+  }
+  // Tokens grant access to the Trakt account: keep the file readable by this user only.
+  try {
+    const real = utils && utils.resolvePath ? utils.resolvePath(TOKEN_PATH) : null;
+    if (real && utils.exec) utils.exec("/bin/chmod", ["600", real]).catch(function () {});
+  } catch (err) {
+    console.log(`trakt tokens chmod: ${err}`);
   }
 }
 
@@ -101,7 +116,7 @@ async function post(path, body, token) {
   Object.keys(headers).forEach(function (name) {
     args.push("-H", `${name}: ${headers[name]}`);
   });
-  args.push("-d", data, url);
+  args.push("--data-raw", data, url);
   const result = await utils.exec("/usr/bin/curl", args);
   const stdout = String((result && result.stdout) || "");
   const cut = stdout.lastIndexOf("\n");
@@ -135,12 +150,22 @@ async function refresh(tokens) {
   return readTokens();
 }
 
+// Refresh tokens are single-use, so concurrent callers share one refresh.
+function refreshOnce(tokens) {
+  if (!refreshing) {
+    refreshing = refresh(tokens).finally(function () {
+      refreshing = null;
+    });
+  }
+  return refreshing;
+}
+
 async function accessToken(forceRefresh) {
   let tokens = readTokens();
   if (!tokens || !tokens.access_token) return null;
   const now = Math.floor(Date.now() / 1000);
   if (forceRefresh || (tokens.expires_at && tokens.expires_at - now < 3600)) {
-    tokens = (await refresh(tokens)) || (forceRefresh ? null : tokens);
+    tokens = (await refreshOnce(tokens)) || (forceRefresh ? null : tokens);
   }
   return tokens && tokens.access_token;
 }
@@ -165,8 +190,13 @@ async function connect(onUpdate) {
     onUpdate({ state: "error" });
     return;
   }
-  const base = String(body.verification_url || "https://trakt.tv/activate").replace(/\/+$/, "");
-  onUpdate({ state: "code", code: body.user_code, url: `${base}/${body.user_code}` });
+  const userCode = clean(body.user_code);
+  if (!userCode) {
+    onUpdate({ state: "error" });
+    return;
+  }
+  // Built here rather than taken from the response, so we only ever open trakt.tv.
+  onUpdate({ state: "code", code: userCode, url: ACTIVATE_URL + userCode });
 
   const session = {
     timer: null,
