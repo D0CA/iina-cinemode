@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Trakt: connect from the plugin menu with a code (trakt.tv/activate opens pre-filled), then what you watch is scrobbled automatically; marked watched past 80%
+- Trakt Client ID / Secret in preferences (your own Trakt app), with an on/off switch
+- TheIntroDB API v4 (v3 is being retired)
+
 ## 1.2.1
 
 - Click anywhere except Resume / Search / Up next dismisses the pause overlay without resuming, so IINA settings stay reachable
