@@ -158,6 +158,20 @@
       </p>
     </div>
 
+    <div class="pref-section">
+      <label>
+        <input type="checkbox" data-type="bool" data-pref-key="traktScrobble" />
+        <span data-i18n="traktScrobble">Envoyer ce que je regarde à Trakt</span>
+      </label>
+      <span data-i18n="traktClientId">Trakt Client ID</span>
+      <input type="text" data-pref-key="traktClientId" />
+      <span data-i18n="traktClientSecret">Trakt Client Secret</span>
+      <input type="text" data-pref-key="traktClientSecret" />
+      <p class="small secondary pref-help" data-i18n="traktHelp">
+        Crée une app sur trakt.tv/oauth/applications, colle les deux clés, puis menu Plugin → Connecter Trakt.
+      </p>
+    </div>
+
     <script src="ui/prefs-i18n.js"></script>
     <script>
       (function () {

@@ -30,6 +30,11 @@ const I18N = {
     matchLanguageTracksHelp:
       "Si un audio dans cette langue existe, il est choisi. Sinon, sous-titres dans cette langue.",
     restartHint: "Change la langue, puis relance IINA pour les menus.",
+    traktScrobble: "Envoyer ce que je regarde à Trakt",
+    traktClientId: "Trakt Client ID",
+    traktClientSecret: "Trakt Client Secret",
+    traktHelp:
+      "Crée une app sur trakt.tv/oauth/applications (Redirect URI : urn:ietf:wg:oauth:2.0:oob), colle les deux clés, puis menu Plugin → Connecter Trakt. Marqué vu à 80 %.",
   },
   "en-US": {
     tmdbKey: "TMDB API key",
@@ -62,6 +67,11 @@ const I18N = {
     matchLanguageTracksHelp:
       "If audio exists in this language, it is selected. Otherwise, subtitles in this language.",
     restartHint: "Change language, then relaunch IINA for menus.",
+    traktScrobble: "Send what I watch to Trakt",
+    traktClientId: "Trakt Client ID",
+    traktClientSecret: "Trakt Client Secret",
+    traktHelp:
+      "Create an app at trakt.tv/oauth/applications (Redirect URI: urn:ietf:wg:oauth:2.0:oob), paste both keys, then Plugin menu → Connect Trakt. Marked watched at 80%.",
   },
   "es-ES": {
     tmdbKey: "Clave API de TMDB",

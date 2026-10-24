@@ -6,6 +6,7 @@ const introdb = require("./introdb.js");
 const aniskip = require("./aniskip.js");
 const store = require("./store.js");
 const i18n = require("./i18n.js");
+const trakt = require("./trakt.js");
 
 let overlayReady = false;
 let overlayLoaded = false;
@@ -33,6 +34,7 @@ let lastSearchAt = 0;
 let searchSeq = 0;
 let lastPickEpisode = "";
 let lastPickEpisodeAt = 0;
+let traktProgress = null;
 
 function lang() {
   return i18n.code();
@@ -414,6 +416,48 @@ async function openNextInStremio() {
   }
 }
 
+function playbackProgress() {
+  const duration = Number(core.status.duration);
+  const position = readTimePos();
+  if (!duration || position == null) return null;
+  return Math.min(100, (position / duration) * 100);
+}
+
+function traktSync() {
+  if (!currentMeta) return;
+  const progress = playbackProgress();
+  if (progress == null) return;
+  traktProgress = progress;
+  trakt.scrobble(core.status.paused ? "pause" : "start", currentMeta, progress);
+}
+
+function traktStopCurrent() {
+  if (!currentMeta || traktProgress == null) return;
+  trakt.scrobble("stop", currentMeta, traktProgress);
+}
+
+function connectTrakt() {
+  trakt
+    .connect(function (update) {
+      if (update.state === "missing-client") osd(i18n.t("traktMissingClient"));
+      else if (update.state === "code") {
+        const code = String(update.code || "").replace(/[^A-Za-z0-9]/g, "");
+        utils.exec("/bin/sh", ["-c", `printf %s ${code} | /usr/bin/pbcopy`]).catch(function () {});
+        openExternal(update.url);
+        osd(i18n.t("traktCode", { code: update.code }));
+      } else if (update.state === "connected") {
+        osd(i18n.t("traktConnected"));
+        traktSync();
+      } else if (update.state === "expired") osd(i18n.t("traktExpired"));
+      else if (update.state === "denied") osd(i18n.t("traktDenied"));
+      else osd(i18n.t("traktError"));
+    })
+    .catch(function (err) {
+      console.log(`trakt connect: ${err}`);
+      osd(i18n.t("traktError"));
+    });
+}
+
 function chapterList() {
   let chapters = [];
   try {
@@ -484,6 +528,7 @@ async function applyMeta(meta) {
     store.setMetaCache(cacheNameFor(currentParsed), meta);
     applyWindowTitle(meta);
     osd(`CineMode · ${prettyTitle(meta)}`);
+    traktSync();
   }
   syncOverlay();
   resolveSkipSegments()
@@ -506,6 +551,7 @@ async function loadMetadata(force) {
     if (cached && cached.id && cached.airDate !== undefined) {
       currentMeta = cached;
       applyWindowTitle(cached);
+      traktSync();
       await resolveSkipSegments();
       syncOverlay();
       if (!cached.malId) {
@@ -570,6 +616,8 @@ function maybeAutoSkip() {
 }
 
 function onFileLoaded() {
+  traktStopCurrent();
+  traktProgress = null;
   currentMeta = null;
   currentSegments = [];
   markStart = null;
@@ -1032,6 +1080,19 @@ function setupMenu() {
       loadMetadata(true);
     }),
   );
+  menu.addItem(menu.separator());
+  menu.addItem(
+    menu.item(i18n.t("menuTraktConnect"), function () {
+      connectTrakt();
+    }),
+  );
+  menu.addItem(
+    menu.item(i18n.t("menuTraktDisconnect"), function () {
+      trakt.disconnect().then(function () {
+        osd(i18n.t("traktDisconnected"));
+      });
+    }),
+  );
 }
 
 event.on("iina.window-loaded", function () {
@@ -1046,6 +1107,8 @@ event.on("iina.plugin-overlay-loaded", function () {
 });
 
 event.on("iina.file-loaded", onFileLoaded);
+
+event.on("iina.window-will-close", traktStopCurrent);
 
 event.on("mpv.pause.changed", function () {
   if (pauseDelayTimer) {
@@ -1079,11 +1142,17 @@ event.on("mpv.pause.changed", function () {
       eatSwipeTimer = null;
     }
   }
+  traktSync();
   requestSync(true);
 });
 
 event.on("mpv.time-pos.changed", function () {
   maybeAutoSkip();
+  const progress = playbackProgress();
+  if (progress != null && currentMeta) {
+    traktProgress = progress;
+    if (progress >= 90) trakt.scrobble("stop", currentMeta, progress);
+  }
   const position = core.status.position || 0;
   const skipVisible =
     !!preferences.get("skipIntro") &&

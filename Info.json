@@ -36,6 +36,9 @@
     "overlaySynopsis": true,
     "overlayProgress": true,
     "overlayUpNext": true,
-    "matchLanguageTracks": true
+    "matchLanguageTracks": true,
+    "traktScrobble": true,
+    "traktClientId": "",
+    "traktClientSecret": ""
   }
 }
