@@ -24,8 +24,21 @@ function clientSecret() {
   return clean(preferences.get("traktClientSecret"));
 }
 
+// New Trakt apps are public (PKCE) clients with no secret; older apps still have one.
 function hasClient() {
-  return !!clientId() && !!clientSecret();
+  return !!clientId();
+}
+
+function withSecret(body) {
+  const secret = clientSecret();
+  if (secret) body.client_secret = secret;
+  return body;
+}
+
+// Only follow Trakt's own activation page, never an arbitrary URL from the response.
+function activateUrl(verificationUrl, userCode) {
+  const match = /^https:\/\/((?:[a-z0-9-]+\.)*trakt\.tv)\/activate\/?$/i.exec(String(verificationUrl || ""));
+  return (match ? `https://${match[1]}/activate/` : ACTIVATE_URL) + userCode;
 }
 
 function readTokens() {
@@ -142,13 +155,12 @@ async function refresh(tokens) {
     return (b === tokens.redirect_uri) - (a === tokens.redirect_uri);
   });
   for (const uri of uris) {
-    const res = await post("/oauth/token", {
+    const res = await post("/oauth/token", withSecret({
       refresh_token: tokens.refresh_token,
       client_id: clientId(),
-      client_secret: clientSecret(),
       redirect_uri: uri,
       grant_type: "refresh_token",
-    });
+    }));
     if (res.status === 200 && res.body && res.body.access_token) {
       saveTokenResponse(res.body, uri);
       return readTokens();
@@ -203,8 +215,7 @@ async function connect(onUpdate) {
     onUpdate({ state: "error" });
     return;
   }
-  // Built here rather than taken from the response, so we only ever open trakt.tv.
-  onUpdate({ state: "code", code: userCode, url: ACTIVATE_URL + userCode });
+  onUpdate({ state: "code", code: userCode, url: activateUrl(body.verification_url, userCode) });
 
   const session = {
     timer: null,
@@ -222,11 +233,10 @@ async function connect(onUpdate) {
     }
     let next;
     try {
-      next = await post("/oauth/device/token", {
+      next = await post("/oauth/device/token", withSecret({
         code: body.device_code,
         client_id: clientId(),
-        client_secret: clientSecret(),
-      });
+      }));
     } catch (err) {
       next = { status: 0 };
     }
@@ -265,11 +275,10 @@ async function disconnect() {
   current = { key: null, action: null, done: false };
   if (tokens && tokens.access_token && hasClient()) {
     try {
-      await post("/oauth/revoke", {
+      await post("/oauth/revoke", withSecret({
         token: tokens.access_token,
         client_id: clientId(),
-        client_secret: clientSecret(),
-      });
+      }));
     } catch (err) {
       console.log(`trakt revoke: ${err}`);
     }
