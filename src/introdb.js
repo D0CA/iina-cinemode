@@ -54,7 +54,7 @@ async function fetchSegments(meta, duration) {
   }
   if (duration) params.duration_ms = String(Math.round(duration * 1000));
 
-  const url = `https://api.theintrodb.org/v3/media?${qs(params)}`;
+  const url = `https://api.theintrodb.org/v4/media?${qs(params)}`;
   try {
     let data = null;
     try {
