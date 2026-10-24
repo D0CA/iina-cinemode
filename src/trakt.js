@@ -2,7 +2,8 @@ const { http, console, preferences, utils, file } = iina;
 
 const API = "https://api.trakt.tv";
 const TOKEN_PATH = "@data/trakt.json";
-const REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
+// New Trakt development apps only accept localhost; older apps were registered with the OOB URI.
+const REDIRECT_URIS = ["http://localhost", "urn:ietf:wg:oauth:2.0:oob"];
 const USER_AGENT = "CineMode/1.3";
 const ACTIVATE_URL = "https://trakt.tv/activate/";
 
@@ -124,30 +125,37 @@ async function post(path, body, token) {
   return { status: status, body: parseBody(stdout.slice(0, cut)) };
 }
 
-function saveTokenResponse(body) {
+function saveTokenResponse(body, redirectUri) {
   const now = Math.floor(Date.now() / 1000);
   writeTokens({
     access_token: body.access_token,
     refresh_token: body.refresh_token,
     expires_at: (body.created_at || now) + (body.expires_in || 0),
+    redirect_uri: redirectUri || null,
   });
 }
 
 async function refresh(tokens) {
   if (!tokens || !tokens.refresh_token) return null;
-  const res = await post("/oauth/token", {
-    refresh_token: tokens.refresh_token,
-    client_id: clientId(),
-    client_secret: clientSecret(),
-    redirect_uri: REDIRECT_URI,
-    grant_type: "refresh_token",
+  // Try the URI that worked last time first, then the others.
+  const uris = REDIRECT_URIS.slice().sort(function (a, b) {
+    return (b === tokens.redirect_uri) - (a === tokens.redirect_uri);
   });
-  if (res.status !== 200 || !res.body || !res.body.access_token) {
-    console.log(`trakt refresh: ${res.status}`);
-    return null;
+  for (const uri of uris) {
+    const res = await post("/oauth/token", {
+      refresh_token: tokens.refresh_token,
+      client_id: clientId(),
+      client_secret: clientSecret(),
+      redirect_uri: uri,
+      grant_type: "refresh_token",
+    });
+    if (res.status === 200 && res.body && res.body.access_token) {
+      saveTokenResponse(res.body, uri);
+      return readTokens();
+    }
+    console.log(`trakt refresh (${uri}): ${res.status}`);
   }
-  saveTokenResponse(res.body);
-  return readTokens();
+  return null;
 }
 
 // Refresh tokens are single-use, so concurrent callers share one refresh.
