@@ -3,7 +3,8 @@
 ## 1.3.0
 
 - Trakt: connect from the plugin menu with a code (trakt.tv/activate opens pre-filled), then what you watch is scrobbled automatically; marked watched past 80%
-- Trakt Client ID / Secret in preferences (your own Trakt app), with an on/off switch
+- Trakt Client ID in preferences (your own Trakt app; Client Secret only for older apps), with an on/off switch
+- Text preferences are saved as you type, so closing Settings right after a paste no longer loses them
 - TheIntroDB API v4 (v3 is being retired)
 
 ## 1.2.1

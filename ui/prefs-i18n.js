@@ -34,7 +34,7 @@ const I18N = {
     traktClientId: "Trakt Client ID",
     traktClientSecret: "Trakt Client Secret (seulement si Trakt t’en a donné un)",
     traktHelp:
-      "Crée une app sur trakt.tv (Redirect URI : http://localhost), colle le Client ID, puis menu Plugin → Connecter Trakt. Marqué vu à 80 %.",
+      "Crée une app sur developer.trakt.tv/apps (Redirect URI : http://localhost), colle le Client ID, puis menu Plugin → Connecter Trakt. Marqué vu à 80 %.",
   },
   "en-US": {
     tmdbKey: "TMDB API key",
@@ -71,7 +71,7 @@ const I18N = {
     traktClientId: "Trakt Client ID",
     traktClientSecret: "Trakt Client Secret (only if Trakt gave you one)",
     traktHelp:
-      "Create an app on trakt.tv (Redirect URI: http://localhost), paste the Client ID, then Plugin menu → Connect Trakt. Marked watched at 80%."
+      "Create an app at developer.trakt.tv/apps (Redirect URI: http://localhost), paste the Client ID, then Plugin menu → Connect Trakt. Marked watched at 80%."
   },
   "es-ES": {
     tmdbKey: "Clave API de TMDB",
